@@ -1,5 +1,5 @@
 import { observable } from "@trpc/server/observable";
-import connections, { Connection } from "./ocpp/connections";
+import connections from "./ocpp/connections";
 import { publicProcedure, router } from "./trpc";
 import { EventEmitter } from "events";
 import { z } from "zod";

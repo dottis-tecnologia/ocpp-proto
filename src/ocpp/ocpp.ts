@@ -64,12 +64,15 @@ ocppServer.on("upgrade", (request, socket, head) => {
   const { pathname } = parse(request.url);
   const match = pathname?.match(/\/webServices\/ocpp\/(.*)/);
 
-  if (match == null) {
-    return socket.destroy();
-  }
+  if (match == null) return socket.destroy();
+
+  const identity = match[1];
+
+  if (identity == null) return socket.destroy();
+  if (connections[identity] != null) return socket.destroy();
 
   ocpp.handleUpgrade(request, socket, head, (ws) => {
-    ocpp.emit("connection", ws, { identity: match[1] });
+    ocpp.emit("connection", ws, { identity });
   });
 });
 

@@ -24,4 +24,5 @@ server.on("upgrade", (request, socket, head) => {
   }
 });
 
-listen(3000);
+const port = +(process.env.PORT || 3000);
+listen(port);

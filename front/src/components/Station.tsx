@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ReactComponent as Icon } from "../assets/charging-station-solid.svg";
-import { Box, Heading } from "@chakra-ui/react";
+import { Box, HStack, Heading, Text } from "@chakra-ui/react";
 import trpc from "../util/trpc";
 
 export type StationProps = {
@@ -12,22 +12,32 @@ export type StationProps = {
 };
 
 export default function Station({ name, info }: StationProps) {
-  const [lastHeartbeat, setLastHeartbeat] = useState<Date>();
+  const [lastHeartbeat, setLastHeartbeat] = useState<Date>(new Date());
+
   trpc.onHeartbeat.useSubscription(name, {
     onData(date) {
-      console.log(date);
+      setLastHeartbeat(new Date(date));
     },
   });
 
   return (
-    <>
-      <Box p={3} textAlign={"center"}>
-        <Icon />
-        <Heading>{name}</Heading>
-        {info.chargePointModel}
-        <br />
-        {info.chargePointVendor}
-      </Box>
-    </>
+    <Box>
+      <HStack gap={3} mb={1} p={3}>
+        <Box w="32">
+          <Icon />
+        </Box>
+        <Box>
+          <Heading>{name}</Heading>
+          <Text>
+            {info.chargePointModel}
+            <br />
+            {info.chargePointVendor}
+          </Text>
+        </Box>
+      </HStack>
+      <Text textAlign={"center"}>
+        Última atualização: {lastHeartbeat.toLocaleTimeString()}
+      </Text>
+    </Box>
   );
 }

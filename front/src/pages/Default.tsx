@@ -16,7 +16,7 @@ export default function Default() {
 
   return (
     <Center h="100vh">
-      <Grid templateColumns="repeat(3, 1fr)" gap={5}>
+      <Grid templateColumns="repeat(2, 1fr)" gap={5}>
         {Object.entries(data).map(([key, value]) => (
           <GridItem key={key}>
             <Station name={key} info={value || undefined} />

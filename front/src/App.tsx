@@ -6,7 +6,7 @@ import Default from "./pages/Default";
 import { ChakraProvider } from "@chakra-ui/react";
 
 const wsClient = createWSClient({
-  url: `ws://localhost:3000`,
+  url: `ws://159.89.179.153:8970`,
 });
 const queryClient = new QueryClient();
 const trpcClient = trpc.createClient({
@@ -19,7 +19,7 @@ const trpcClient = trpc.createClient({
         client: wsClient,
       }),
       false: httpLink({
-        url: `http://localhost:3000`,
+        url: `http://159.89.179.153:8970`,
       }),
     }),
   ],

@@ -27,8 +27,6 @@ const handlers: Record<
 
 ocpp.on("connection", (ws, req: { identity: string }) => {
   ws.identifier = req.identity;
-  connections[ws.identifier] = null;
-  ee.emit("connectionsChanged");
 
   ws.on("message", async (rawData) => {
     const [, id, method, payload] = callMessageSchema.parse(

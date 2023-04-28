@@ -1,76 +1,33 @@
 import { useState } from "react";
 import { ReactComponent as Icon } from "../assets/charging-station-solid.svg";
-import {
-  useFloating,
-  useHover,
-  useInteractions,
-  useFocus,
-  useDismiss,
-  useRole,
-  autoPlacement,
-} from "@floating-ui/react";
 import { Box, Heading } from "@chakra-ui/react";
+import trpc from "../util/trpc";
 
 export type StationProps = {
   name: string;
-  info?: {
+  info: {
     chargePointModel: string;
     chargePointVendor: string;
   };
 };
 
 export default function Station({ name, info }: StationProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const { x, y, strategy, refs, context } = useFloating({
-    middleware: [autoPlacement()],
-    open: isOpen,
-    onOpenChange: setIsOpen,
+  const [lastHeartbeat, setLastHeartbeat] = useState<Date>();
+  trpc.onHeartbeat.useSubscription(name, {
+    onData(date) {
+      console.log(date);
+    },
   });
-  const hover = useHover(context, { move: false });
-  const focus = useFocus(context);
-  const dismiss = useDismiss(context);
-  const role = useRole(context, { role: "tooltip" });
-
-  const { getReferenceProps, getFloatingProps } = useInteractions([
-    hover,
-    focus,
-    dismiss,
-    role,
-  ]);
 
   return (
     <>
-      <Box ref={refs.setReference} {...getReferenceProps()}>
+      <Box p={3} textAlign={"center"}>
         <Icon />
         <Heading>{name}</Heading>
+        {info.chargePointModel}
+        <br />
+        {info.chargePointVendor}
       </Box>
-      {isOpen && (
-        <Box
-          ref={refs.setFloating}
-          style={{
-            position: strategy,
-            top: y ?? 0,
-            left: x ?? 0,
-            width: "max-content",
-          }}
-          p={3}
-          m={3}
-          bg="gray.900"
-          color="white"
-          rounded="lg"
-          {...getFloatingProps()}
-        >
-          {info ? (
-            <>
-              {info.chargePointModel}
-              <br />
-              {info.chargePointVendor}
-            </>
-          ) : (
-            <>Carregando...</>
-          )}
-        </Box>
-      )}
     </>
   );
 }

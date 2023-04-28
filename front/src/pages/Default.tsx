@@ -1,4 +1,4 @@
-import { Center } from "@chakra-ui/react";
+import { Center, Grid, GridItem } from "@chakra-ui/react";
 import Station from "../components/Station";
 import trpc from "../util/trpc";
 
@@ -16,9 +16,13 @@ export default function Default() {
 
   return (
     <Center h="100vh">
-      {Object.entries(data).map(([key, value]) => (
-        <Station name={key} key={key} info={value || undefined} />
-      ))}
+      <Grid templateColumns="repeat(3, 1fr)" gap={5}>
+        {Object.entries(data).map(([key, value]) => (
+          <GridItem key={key}>
+            <Station name={key} info={value || undefined} />
+          </GridItem>
+        ))}
+      </Grid>
     </Center>
   );
 }

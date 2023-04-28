@@ -2,6 +2,7 @@ import { observable } from "@trpc/server/observable";
 import connections, { Connection } from "./ocpp/connections";
 import { publicProcedure, router } from "./trpc";
 import { EventEmitter } from "events";
+import { z } from "zod";
 
 export const ee = new EventEmitter();
 
@@ -19,6 +20,20 @@ const appRouter = router({
       ee.on("connectionsChanged", onConnectionChanged);
       return () => {
         ee.off("connectionsChanged", onConnectionChanged);
+      };
+    })
+  ),
+  onHeartbeat: publicProcedure.input(z.string()).subscription(({ input }) =>
+    observable<Date>((emit) => {
+      const onHeartbeat = (id: string, date: Date) => {
+        if (id === input) {
+          emit.next(date);
+        }
+      };
+
+      ee.on("heartbeat", onHeartbeat);
+      return () => {
+        ee.off("heartbeat", onHeartbeat);
       };
     })
   ),

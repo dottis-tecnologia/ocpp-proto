@@ -4,6 +4,9 @@ import callMessageSchema, { CallError, CallResult } from "./schemas/Call";
 import { MessageType } from "./schemas/MessageType";
 import Heartbeat from "./messages/Heartbeat";
 import connections from "./connections";
+import { ee } from "../server";
+import { parse } from "url";
+import { createServer } from "http";
 
 declare module "ws" {
   interface WebSocket {
@@ -11,6 +14,7 @@ declare module "ws" {
   }
 }
 
+const ocppServer = createServer();
 const ocpp = new ws.Server({ noServer: true });
 
 const handlers: Record<
@@ -23,6 +27,8 @@ const handlers: Record<
 
 ocpp.on("connection", (ws, req: { identity: string }) => {
   ws.identifier = req.identity;
+  connections[ws.identifier] = null;
+  ee.emit("connectionsChanged");
 
   ws.on("message", async (rawData) => {
     const [, id, method, payload] = callMessageSchema.parse(
@@ -50,7 +56,23 @@ ocpp.on("connection", (ws, req: { identity: string }) => {
 
   ws.on("close", () => {
     delete connections[ws.identifier];
+    ee.emit("connectionsChanged");
   });
 });
 
-export default ocpp;
+ocppServer.on("upgrade", (request, socket, head) => {
+  if (request.url == null) return socket.destroy();
+
+  const { pathname } = parse(request.url);
+  const match = pathname?.match(/\/webServices\/ocpp\/(.*)/);
+
+  if (match == null) {
+    return socket.destroy();
+  }
+
+  ocpp.handleUpgrade(request, socket, head, (ws) => {
+    ocpp.emit("connection", ws, { identity: match[1] });
+  });
+});
+
+export default ocppServer;

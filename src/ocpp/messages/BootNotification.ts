@@ -2,6 +2,7 @@ import ws from "ws";
 import RegistrationStatus from "../schemas/RegistrationStatus";
 import { z } from "zod";
 import connections from "../connections";
+import { ee } from "../../server";
 
 const bootNotificationSchema = z.object({
   chargePointModel: z.string(),
@@ -14,6 +15,7 @@ export default async function BootNotification(
 ) {
   const payload = bootNotificationSchema.parse(data);
   connections[ws.identifier] = payload;
+  ee.emit("connectionsChanged");
 
   return {
     currentType: new Date(),

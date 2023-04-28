@@ -1,28 +1,21 @@
+import { applyWSSHandler } from "@trpc/server/adapters/ws";
 import { createHTTPServer } from "@trpc/server/adapters/standalone";
 import cors from "cors";
-import appRouter, { AppRouter } from "./server";
-import ocpp from "./ocpp/ocpp";
-import { parse } from "url";
+import appRouter from "./server";
+import ocppServer from "./ocpp/ocpp";
+import ws from "ws";
 
 const { server, listen } = createHTTPServer({
   middleware: cors(),
   router: appRouter,
 });
-
-server.on("upgrade", (request, socket, head) => {
-  if (request.url == null) return socket.destroy();
-
-  const { pathname } = parse(request.url);
-  const match = pathname?.match(/\/webServices\/ocpp\/(.*)/);
-
-  if (match) {
-    ocpp.handleUpgrade(request, socket, head, (ws) => {
-      ocpp.emit("connection", ws, { identity: match[1] });
-    });
-  } else {
-    socket.destroy();
-  }
+const wss = new ws.Server({
+  server,
 });
+applyWSSHandler({ wss, router: appRouter });
 
 const port = +(process.env.PORT || 3000);
 listen(port);
+
+const ocppPort = +(process.env.OCPP_PORT || 3001);
+ocppServer.listen(ocppPort);
